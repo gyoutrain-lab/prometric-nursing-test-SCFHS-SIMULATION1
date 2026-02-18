@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SCFHS Nurse Technician Prometric – Level 4</title>
+
+<style>
+body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
+.hidden { display:none; }
+.question { background:#fff; padding:15px; margin-bottom:20px; border-radius:8px; }
+.option { padding:8px; margin:6px 0; border:1px solid #ccc; border-radius:6px; cursor:pointer; }
+.option.correct { background:#d4edda; border-color:#28a745; }
+.option.incorrect { background:#f8d7da; border-color:#dc3545; }
+.rationale { margin-top:10px; font-size:0.9em; }
+button { padding:10px 20px; font-size:16px; }
+</style>
+</head>
+
+<body>
+
+<div id="startScreen">
+  <h2>SCFHS Nurse Technician Exam</h2>
+  <input id="studentName" placeholder="Full Name"><br><br>
+  <input id="studentID" placeholder="SCFHS ID"><br><br>
+  <button onclick="startExam()">Start Exam</button>
+</div>
+
+<div id="examScreen" class="hidden">
+  <div id="questionContainer"></div>
+  <button onclick="submitAnswer()">Submit</button>
+</div>
+
+<script>
+let current = 0;
+let selected = null;
+let score = 0;
+
+const QUESTIONS = [
+
+/* =======================
+   ITEM 1
+======================= */
+{
+  stem: "A 68-year-old patient in the ICU becomes restless and confused. Vital signs are BP 88/54 mmHg, HR 124/min, RR 30/min, SpO₂ 89% on room air. What is the nurse technician’s PRIORITY action?",
+  options: [
+    { text:"Document the findings and continue observation" },
+    { text:"Apply oxygen via non-rebreather mask" },
+    { text:"Notify the registered nurse immediately" },
+    { text:"Recheck vital signs in 15 minutes" }
+  ],
+  correct: 2,
+  rationales: [
+    "Incorrect. Documentation alone delays urgent intervention.",
+    "Incorrect. Initiating high-flow oxygen requires RN direction.",
+    "Correct. These are signs of shock and require immediate RN notification.",
+    "Incorrect. Waiting places the patient at serious risk."
+  ]
+},
+
+/* =======================
+   ITEM 2
+======================= */
+{
+  stem: "A nurse technician is caring for a postoperative patient who suddenly reports severe shortness of breath and chest pain. What should the technician do FIRST?",
+  options: [
+    { text:"Assist the patient to sit upright" },
+    { text:"Call the rapid response team" },
+    { text:"Check the surgical incision" },
+    { text:"Administer prescribed analgesic" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Positioning alone is insufficient in an emergency.",
+    "Correct. These symptoms indicate possible pulmonary embolism.",
+    "Incorrect. The incision is not the immediate priority.",
+    "Incorrect. Pain medication delays life-saving care."
+  ]
+},
+
+/* =======================
+   ITEM 3
+======================= */
+{
+  stem: "A pediatric patient has dry mucous membranes, sunken eyes, and delayed capillary refill. What is the MOST important action by the nurse technician?",
+  options: [
+    { text:"Offer oral fluids" },
+    { text:"Measure urine output" },
+    { text:"Notify the registered nurse" },
+    { text:"Document findings in the chart" }
+  ],
+  correct: 2,
+  rationales: [
+    "Incorrect. Oral fluids may not be safe without assessment.",
+    "Incorrect. Monitoring alone delays escalation.",
+    "Correct. These are signs of severe dehydration.",
+    "Incorrect. Documentation does not address urgency."
+  ]
+},
+
+/* =======================
+   ITEM 4
+======================= */
+{
+  stem: "A patient receiving heparin develops bleeding gums and dark stools. What should the nurse technician do?",
+  options: [
+    { text:"Hold the next dose of heparin" },
+    { text:"Notify the registered nurse immediately" },
+    { text:"Reassure the patient this is expected" },
+    { text:"Check blood pressure again later" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Holding medication is outside technician scope.",
+    "Correct. These indicate possible bleeding complication.",
+    "Incorrect. This is not a normal side effect.",
+    "Incorrect. Delays intervention."
+  ]
+},
+
+/* =======================
+   ITEM 5
+======================= */
+{
+  stem: "A restrained patient attempts to remove the restraints. What is the nurse technician’s LEGAL responsibility?",
+  options: [
+    { text:"Tighten the restraints" },
+    { text:"Leave the patient alone" },
+    { text:"Assess circulation and notify RN" },
+    { text:"Remove restraints permanently" }
+  ],
+  correct: 2,
+  rationales: [
+    "Incorrect. Tightening increases injury risk.",
+    "Incorrect. Continuous monitoring is required.",
+    "Correct. Circulation checks and RN notification are mandatory.",
+    "Incorrect. Removal requires RN/physician order."
+  ]
+},
+
+/* =======================
+   ITEM 6
+======================= */
+{
+  stem: "A confused elderly patient tries to get out of bed unassisted. What is the BEST immediate action?",
+  options: [
+    { text:"Apply physical restraints" },
+    { text:"Lower the bed and stay with the patient" },
+    { text:"Leave to get assistance" },
+    { text:"Document the behavior" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Restraints are last resort.",
+    "Correct. Prevents fall and ensures safety.",
+    "Incorrect. Leaving increases fall risk.",
+    "Incorrect. Documentation is not immediate safety."
+  ]
+},
+
+/* =======================
+   ITEM 7
+======================= */
+{
+  stem: "A patient refuses a prescribed procedure. What should the nurse technician do?",
+  options: [
+    { text:"Proceed with the procedure" },
+    { text:"Explain the risks and benefits" },
+    { text:"Notify the registered nurse" },
+    { text:"Document refusal and continue care" }
+  ],
+  correct: 2,
+  rationales: [
+    "Incorrect. This violates patient rights.",
+    "Incorrect. Consent discussion is RN/MD role.",
+    "Correct. Refusal must be escalated.",
+    "Incorrect. Documentation alone is insufficient."
+  ]
+},
+
+/* =======================
+   ITEM 8
+======================= */
+{
+  stem: "During oxygen therapy, a patient becomes drowsy and hypoventilates. What is the technician’s priority?",
+  options: [
+    { text:"Remove oxygen" },
+    { text:"Stimulate the patient and notify RN" },
+    { text:"Increase oxygen flow" },
+    { text:"Document findings" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Abrupt removal is unsafe.",
+    "Correct. Possible CO₂ retention requires immediate action.",
+    "Incorrect. Increasing oxygen worsens condition.",
+    "Incorrect. Delays intervention."
+  ]
+},
+
+/* =======================
+   ITEM 9
+======================= */
+{
+  stem: "A psychiatric patient expresses intent to harm others. What should the nurse technician do FIRST?",
+  options: [
+    { text:"Maintain patient confidentiality" },
+    { text:"Notify the healthcare team immediately" },
+    { text:"Document and continue observation" },
+    { text:"Attempt counseling" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Safety overrides confidentiality.",
+    "Correct. Immediate reporting is required.",
+    "Incorrect. Observation alone is unsafe.",
+    "Incorrect. Counseling is not technician role."
+  ]
+},
+
+/* =======================
+   ITEM 10
+======================= */
+{
+  stem: "After a patient fall, what is the nurse technician’s PRIORITY responsibility?",
+  options: [
+    { text:"Complete an incident report" },
+    { text:"Assess the patient and notify RN" },
+    { text:"Reassure the patient" },
+    { text:"Clean the area" }
+  ],
+  correct: 1,
+  rationales: [
+    "Incorrect. Reporting comes after assessment.",
+    "Correct. Patient safety and escalation first.",
+    "Incorrect. Reassurance does not assess injury.",
+    "Incorrect. Environment comes later."
+  ]
+}
+
+];
+
+function startExam(){
+  if(!studentName.value || !studentID.value){
+    alert("Enter Name and ID");
+    return;
+  }
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("examScreen").classList.remove("hidden");
+  loadQuestion();
+}
+
+function loadQuestion(){
+  selected = null;
+  const q = QUESTIONS[current];
+  let html = `<div class="question"><b>Q${current+1}.</b> ${q.stem}`;
+  q.options.forEach((opt,i)=>{
+    html += `<div class="option" onclick="select(${i})" id="opt${i}">${opt.text}</div>`;
+  });
+  html += `</div>`;
+  document.getElementById("questionContainer").innerHTML = html;
+}
+
+function select(i){
+  selected = i;
+}
+
+function submitAnswer(){
+  if(selected === null) return alert("Select an option");
+  const q = QUESTIONS[current];
+  q.options.forEach((_,i)=>{
+    const el = document.getElementById("opt"+i);
+    if(i === q.correct) el.classList.add("correct");
+    else if(i === selected) el.classList.add("incorrect");
+    el.innerHTML += `<div class="rationale">${q.rationales[i]}</div>`;
+  });
+  current++;
+  setTimeout(()=>{ if(current < QUESTIONS.length) loadQuestion(); }, 2000);
+}
+</script>
+
+</body>
+</html>
