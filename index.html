@@ -2,279 +2,292 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SCFHS Nurse Technician Prometric – Level 4</title>
+<title>SCFHS Pass Prediction Engine</title>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
-.hidden { display:none; }
-.question { background:#fff; padding:15px; margin-bottom:20px; border-radius:8px; }
-.option { padding:8px; margin:6px 0; border:1px solid #ccc; border-radius:6px; cursor:pointer; }
-.option.correct { background:#d4edda; border-color:#28a745; }
-.option.incorrect { background:#f8d7da; border-color:#dc3545; }
-.rationale { margin-top:10px; font-size:0.9em; }
-button { padding:10px 20px; font-size:16px; }
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+}
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #ffffff;
+  padding: 20px;
+  min-height: 100vh;
+}
+h1, h2 {
+  text-align: center;
+}
+.hidden { display: none; }
+
+input, button {
+  padding: 10px;
+  margin: 6px 0;
+  width: 100%;
+  font-size: 16px;
+}
+
+#timer {
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #1f2937;
+}
+
+.option {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.option:hover { background: #eef2f5; }
+.option.selected { background: #d9e8ff; }
+.option.correct { border-left: 6px solid green; }
+.option.wrong { border-left: 6px solid red; }
+
+.rationale {
+  background: #f9fafb;
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.report {
+  background: #f1f5f9;
+  padding: 20px;
+  margin-top: 20px;
+}
 </style>
 </head>
 
 <body>
+<div class="container">
 
+<!-- START SCREEN -->
 <div id="startScreen">
-  <h2>SCFHS Nurse Technician Exam</h2>
-  <input id="studentName" placeholder="Full Name"><br><br>
-  <input id="studentID" placeholder="SCFHS ID"><br><br>
-  <button onclick="startExam()">Start Exam</button>
+  <h1>SCFHS Pass Prediction Test</h1>
+  <input type="text" id="candidateName" placeholder="Full Name">
+  <input type="text" id="candidateID" placeholder="Candidate ID">
+  <button onclick="startExam()">Start Test</button>
 </div>
 
+<!-- EXAM SCREEN -->
 <div id="examScreen" class="hidden">
-  <div id="questionContainer"></div>
-  <button onclick="submitAnswer()">Submit</button>
+  <h2 id="qCounter"></h2>
+  <div id="timer">Time Remaining: 20:00</div>
+  <p id="questionText"></p>
+  <div id="options"></div>
+
+  <button onclick="submitAnswer()">Submit Answer</button>
+
+  <div id="rationaleBox" class="rationale hidden"></div>
+  <button id="nextBtn" class="hidden" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="resultScreen" class="hidden">
+  <h1>PASS PREDICTION RESULT</h1>
+  <div id="finalReport" class="report"></div>
+</div>
+
 </div>
 
 <script>
-let current = 0;
-let selected = null;
-let score = 0;
-
-const QUESTIONS = [
-
-/* =======================
-   ITEM 1
-======================= */
+// ================= QUESTIONS =================
+const questions = [
 {
-  stem: "A 68-year-old patient in the ICU becomes restless and confused. Vital signs are BP 88/54 mmHg, HR 124/min, RR 30/min, SpO₂ 89% on room air. What is the nurse technician’s PRIORITY action?",
+  q: "A patient states, “I plan to kill myself tonight,” and has access to a firearm. What is the nurse’s PRIORITY action?",
   options: [
-    { text:"Document the findings and continue observation" },
-    { text:"Apply oxygen via non-rebreather mask" },
-    { text:"Notify the registered nurse immediately" },
-    { text:"Recheck vital signs in 15 minutes" }
+    { text: "Ensure immediate safety and initiate involuntary hold procedures", tag: "SCFHS" },
+    { text: "Respect the patient’s confidentiality", tag: "SAFE_DELAY" },
+    { text: "Encourage the patient to reconsider", tag: "NCLEX" },
+    { text: "Document the statement and continue assessment", tag: "STR" }
   ],
-  correct: 2,
-  rationales: [
-    "Incorrect. Documentation alone delays urgent intervention.",
-    "Incorrect. Initiating high-flow oxygen requires RN direction.",
-    "Correct. These are signs of shock and require immediate RN notification.",
-    "Incorrect. Waiting places the patient at serious risk."
-  ]
+  correctTag: "SCFHS",
+  rationale: {
+    correct: "Expressed intent with means constitutes imminent danger requiring immediate protective action.",
+    distractors: {
+      SAFE_DELAY: "Confidentiality does not apply when life is at risk.",
+      NCLEX: "Therapeutic communication cannot replace safety measures.",
+      STR: "Documentation alone is insufficient."
+    }
+  }
 },
-
-/* =======================
-   ITEM 2
-======================= */
 {
-  stem: "A nurse technician is caring for a postoperative patient who suddenly reports severe shortness of breath and chest pain. What should the technician do FIRST?",
+  q: "A patient with acute psychosis is pacing and threatening staff but has not attempted harm. What is the nurse’s FIRST intervention?",
   options: [
-    { text:"Assist the patient to sit upright" },
-    { text:"Call the rapid response team" },
-    { text:"Check the surgical incision" },
-    { text:"Administer prescribed analgesic" }
+    { text: "Use verbal de-escalation techniques", tag: "SCFHS" },
+    { text: "Apply physical restraints immediately", tag: "SAFE_DELAY" },
+    { text: "Administer PRN antipsychotic medication", tag: "NCLEX" },
+    { text: "Call security to restrain the patient", tag: "STR" }
   ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Positioning alone is insufficient in an emergency.",
-    "Correct. These symptoms indicate possible pulmonary embolism.",
-    "Incorrect. The incision is not the immediate priority.",
-    "Incorrect. Pain medication delays life-saving care."
-  ]
+  correctTag: "SCFHS",
+  rationale: {
+    correct: "Least-restrictive interventions must be attempted before restraints or medications.",
+    distractors: {
+      SAFE_DELAY: "Restraints are last-resort measures.",
+      NCLEX: "Medication without de-escalation may violate rights.",
+      STR: "Security escalates the situation prematurely."
+    }
+  }
 },
-
-/* =======================
-   ITEM 3
-======================= */
 {
-  stem: "A pediatric patient has dry mucous membranes, sunken eyes, and delayed capillary refill. What is the MOST important action by the nurse technician?",
+  q: "A patient expresses passive death wishes but denies intent or plan. What is the nurse’s BEST action?",
   options: [
-    { text:"Offer oral fluids" },
-    { text:"Measure urine output" },
-    { text:"Notify the registered nurse" },
-    { text:"Document findings in the chart" }
+    { text: "Conduct further suicide risk assessment", tag: "SCFHS" },
+    { text: "Initiate involuntary hold immediately", tag: "SAFE_DELAY" },
+    { text: "Dismiss the statement as attention-seeking", tag: "NCLEX" },
+    { text: "Document and end the conversation", tag: "STR" }
   ],
-  correct: 2,
-  rationales: [
-    "Incorrect. Oral fluids may not be safe without assessment.",
-    "Incorrect. Monitoring alone delays escalation.",
-    "Correct. These are signs of severe dehydration.",
-    "Incorrect. Documentation does not address urgency."
-  ]
-},
-
-/* =======================
-   ITEM 4
-======================= */
-{
-  stem: "A patient receiving heparin develops bleeding gums and dark stools. What should the nurse technician do?",
-  options: [
-    { text:"Hold the next dose of heparin" },
-    { text:"Notify the registered nurse immediately" },
-    { text:"Reassure the patient this is expected" },
-    { text:"Check blood pressure again later" }
-  ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Holding medication is outside technician scope.",
-    "Correct. These indicate possible bleeding complication.",
-    "Incorrect. This is not a normal side effect.",
-    "Incorrect. Delays intervention."
-  ]
-},
-
-/* =======================
-   ITEM 5
-======================= */
-{
-  stem: "A restrained patient attempts to remove the restraints. What is the nurse technician’s LEGAL responsibility?",
-  options: [
-    { text:"Tighten the restraints" },
-    { text:"Leave the patient alone" },
-    { text:"Assess circulation and notify RN" },
-    { text:"Remove restraints permanently" }
-  ],
-  correct: 2,
-  rationales: [
-    "Incorrect. Tightening increases injury risk.",
-    "Incorrect. Continuous monitoring is required.",
-    "Correct. Circulation checks and RN notification are mandatory.",
-    "Incorrect. Removal requires RN/physician order."
-  ]
-},
-
-/* =======================
-   ITEM 6
-======================= */
-{
-  stem: "A confused elderly patient tries to get out of bed unassisted. What is the BEST immediate action?",
-  options: [
-    { text:"Apply physical restraints" },
-    { text:"Lower the bed and stay with the patient" },
-    { text:"Leave to get assistance" },
-    { text:"Document the behavior" }
-  ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Restraints are last resort.",
-    "Correct. Prevents fall and ensures safety.",
-    "Incorrect. Leaving increases fall risk.",
-    "Incorrect. Documentation is not immediate safety."
-  ]
-},
-
-/* =======================
-   ITEM 7
-======================= */
-{
-  stem: "A patient refuses a prescribed procedure. What should the nurse technician do?",
-  options: [
-    { text:"Proceed with the procedure" },
-    { text:"Explain the risks and benefits" },
-    { text:"Notify the registered nurse" },
-    { text:"Document refusal and continue care" }
-  ],
-  correct: 2,
-  rationales: [
-    "Incorrect. This violates patient rights.",
-    "Incorrect. Consent discussion is RN/MD role.",
-    "Correct. Refusal must be escalated.",
-    "Incorrect. Documentation alone is insufficient."
-  ]
-},
-
-/* =======================
-   ITEM 8
-======================= */
-{
-  stem: "During oxygen therapy, a patient becomes drowsy and hypoventilates. What is the technician’s priority?",
-  options: [
-    { text:"Remove oxygen" },
-    { text:"Stimulate the patient and notify RN" },
-    { text:"Increase oxygen flow" },
-    { text:"Document findings" }
-  ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Abrupt removal is unsafe.",
-    "Correct. Possible CO₂ retention requires immediate action.",
-    "Incorrect. Increasing oxygen worsens condition.",
-    "Incorrect. Delays intervention."
-  ]
-},
-
-/* =======================
-   ITEM 9
-======================= */
-{
-  stem: "A psychiatric patient expresses intent to harm others. What should the nurse technician do FIRST?",
-  options: [
-    { text:"Maintain patient confidentiality" },
-    { text:"Notify the healthcare team immediately" },
-    { text:"Document and continue observation" },
-    { text:"Attempt counseling" }
-  ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Safety overrides confidentiality.",
-    "Correct. Immediate reporting is required.",
-    "Incorrect. Observation alone is unsafe.",
-    "Incorrect. Counseling is not technician role."
-  ]
-},
-
-/* =======================
-   ITEM 10
-======================= */
-{
-  stem: "After a patient fall, what is the nurse technician’s PRIORITY responsibility?",
-  options: [
-    { text:"Complete an incident report" },
-    { text:"Assess the patient and notify RN" },
-    { text:"Reassure the patient" },
-    { text:"Clean the area" }
-  ],
-  correct: 1,
-  rationales: [
-    "Incorrect. Reporting comes after assessment.",
-    "Correct. Patient safety and escalation first.",
-    "Incorrect. Reassurance does not assess injury.",
-    "Incorrect. Environment comes later."
-  ]
+  correctTag: "SCFHS",
+  rationale: {
+    correct: "Further assessment is required when risk is unclear.",
+    distractors: {
+      SAFE_DELAY: "Hold requires imminent danger.",
+      NCLEX: "Dismissal risks missing escalation.",
+      STR: "Ending assessment is unsafe."
+    }
+  }
 }
-
 ];
 
-function startExam(){
-  if(!studentName.value || !studentID.value){
+// ================= ENGINE =================
+let shuffledQuestions = [];
+let currentIndex = 0;
+let selectedIndex = null;
+
+let score = { SCFHS:0, NCLEX:0, STR:0, SAFE_DELAY:0 };
+
+// ================= TIMER =================
+let totalTime = 20 * 60; // 20 minutes
+let timeLeft = totalTime;
+let timerInterval = null;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function startExam() {
+  if (!candidateName.value.trim() || !candidateID.value.trim()) {
     alert("Enter Name and ID");
     return;
   }
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("examScreen").classList.remove("hidden");
+
+  shuffledQuestions = shuffle(questions).map(q => ({
+    ...q,
+    options: shuffle(q.options)
+  }));
+
+  startScreen.classList.add("hidden");
+  examScreen.classList.remove("hidden");
+
+  startTimer();
   loadQuestion();
 }
 
-function loadQuestion(){
-  selected = null;
-  const q = QUESTIONS[current];
-  let html = `<div class="question"><b>Q${current+1}.</b> ${q.stem}`;
-  q.options.forEach((opt,i)=>{
-    html += `<div class="option" onclick="select(${i})" id="opt${i}">${opt.text}</div>`;
+function loadQuestion() {
+  selectedIndex = null;
+  rationaleBox.classList.add("hidden");
+  nextBtn.classList.add("hidden");
+
+  const q = shuffledQuestions[currentIndex];
+  qCounter.innerText = `Question ${currentIndex + 1} of ${shuffledQuestions.length}`;
+  questionText.innerText = q.q;
+
+  options.innerHTML = "";
+  q.options.forEach((opt, i) => {
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerText = opt.text;
+    div.onclick = () => selectOption(div, i);
+    options.appendChild(div);
   });
-  html += `</div>`;
-  document.getElementById("questionContainer").innerHTML = html;
 }
 
-function select(i){
-  selected = i;
+function selectOption(div, index) {
+  document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+  div.classList.add("selected");
+  selectedIndex = index;
 }
 
-function submitAnswer(){
-  if(selected === null) return alert("Select an option");
-  const q = QUESTIONS[current];
-  q.options.forEach((_,i)=>{
-    const el = document.getElementById("opt"+i);
-    if(i === q.correct) el.classList.add("correct");
-    else if(i === selected) el.classList.add("incorrect");
-    el.innerHTML += `<div class="rationale">${q.rationales[i]}</div>`;
+function submitAnswer() {
+  if (selectedIndex === null) {
+    alert("Select an option");
+    return;
+  }
+
+  const q = shuffledQuestions[currentIndex];
+  const chosen = q.options[selectedIndex];
+  const isCorrect = chosen.tag === q.correctTag;
+
+  score[chosen.tag]++;
+
+  document.querySelectorAll(".option").forEach((o, i) => {
+    if (q.options[i].tag === q.correctTag) o.classList.add("correct");
+    if (i === selectedIndex && !isCorrect) o.classList.add("wrong");
   });
-  current++;
-  setTimeout(()=>{ if(current < QUESTIONS.length) loadQuestion(); }, 2000);
+
+  rationaleBox.classList.remove("hidden");
+  rationaleBox.innerHTML = isCorrect
+    ? `<b>Correct.</b><br><br>${q.rationale.correct}`
+    : `<b>Incorrect.</b><br><br>${q.rationale.distractors[chosen.tag]}
+       <hr><b>Correct Rationale:</b><br>${q.rationale.correct}`;
+
+  nextBtn.classList.remove("hidden");
+}
+
+function nextQuestion() {
+  currentIndex++;
+  currentIndex < shuffledQuestions.length ? loadQuestion() : showResult();
+}
+
+function startTimer() {
+  updateTimer();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoEndExam();
+    }
+    updateTimer();
+  }, 1000);
+}
+
+function updateTimer() {
+  const min = Math.floor(timeLeft / 60);
+  const sec = timeLeft % 60;
+  timer.innerText = `Time Remaining: ${min}:${sec.toString().padStart(2,"0")}`;
+}
+
+function autoEndExam() {
+  if (selectedIndex !== null) submitAnswer();
+  setTimeout(showResult, 600);
+}
+
+function showResult() {
+  clearInterval(timerInterval);
+
+  examScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+
+  const decision =
+    score.SCFHS >= score.NCLEX && score.SCFHS >= score.STR
+      ? "🟢 GO — SCFHS Ready"
+      : "🔴 NO-GO — Not SCFHS Ready";
+
+  finalReport.innerHTML = `
+    <b>Decision:</b> ${decision}<br><br>
+    <b>SCFHS Alignment:</b> ${score.SCFHS}<br>
+    <b>NCLEX Bias:</b> ${score.NCLEX}<br>
+    <b>STR Bias:</b> ${score.STR}<br><br>
+    <b>Examiner Interpretation:</b><br>
+    ${decision.includes("GO")
+      ? "Consistent prioritization aligned with SCFHS Prometric expectations."
+      : "Delayed or escalation-biased decision-making inconsistent with SCFHS standards."}
+  `;
 }
 </script>
 
